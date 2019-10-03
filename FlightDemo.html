@@ -1,0 +1,487 @@
+<style>
+#chartdiv {
+  width: 100%;
+  height: 100%;
+}
+</style>
+
+<!-- Resources -->
+<script src="https://www.amcharts.com/lib/4/core.js"></script>
+<script src="https://www.amcharts.com/lib/4/maps.js"></script>
+<script src="https://www.amcharts.com/lib/4/geodata/worldLow.js"></script>
+<script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+
+<!-- Chart code -->
+<script>
+  //AirSpace Class|From_City|To_City|Price|Aircraft Model| Engine Model
+var flight_data = [
+  ['B','Sydney','Melbourne','180.00','A330-203','CF6-80E142'],
+  ['A','Sydney','Brisbane','170.00','A330-202','CF6-80E142'],
+  ['B','Sydney','Canberra','120.00','B737-3B7','CFM56-3B1'],
+  ['B','Canberra','Sydney','120.00','B737-476','CFM-56-3'],
+  ['A','Sydney','Newcastle','90.00','A320-232','V2527-5A'],
+  ['A','Newcastle','Sydney','90.00','A320-232','V2527-5A'],
+  ['B','Sydney','BrokenHill','130.00','A320-232','V2527-5A'],
+  ['B','BrokenHill','Sydney','130.00','A320-232','V2527-5A'],
+  ['C','Melbourne','Sydney','180.00','A330-243','772B-60'],
+  ['B','Melbourne','Canberra','140.00','A320-232','V2527-5A'],
+  ['B','Canberra','Melbourne','140.00','A320-232','V2527-5A'],
+  ['A','Melbourne','Adelaide','175.00','B737-3B7','CFM56-3B1'],
+  ['A','Melbourne','Hobart','130.00','A320-232','V2527-5A'],
+  ['A','Melbourne','Bendigo','70.00','B717-200','Unknown'],
+  ['A','Bendigo','Melbourne','70.00','B717-200','Unknown'],
+  ['A','Melbourne','Launceston','100.00','B737-3B7','CFM56-3B1'],
+  ['C','Adelaide','Melbourne','175.00','B737-3B7','CFM56-3B1'],
+  ['C','Adelaide','BrokenHill','100.00','A320-232','V2527-5A'],
+  ['C','BrokenHill','Adelaide','100.00','A320-232','V2527-5A'],
+  ['D','Adelaide','Perth','220.00','A330-203','CF6-80E142'],
+  ['D','Adelaide','Darwin','230.00','A330-203','CF6-80E142'],
+  ['D','Darwin','Adelaide','230.00','A330-203','CF6-80E142'],
+  ['E','Darwin','AliceSprings','120.00','B737-476','CFM-56-3'],
+  ['E','AliceSprings','Darwin','120.00','B737-476','CFM-56-3'],
+  ['D','Perth','Adelaide','220.00','A330-203','CF6-80E142'],
+  ['C','Perth','Albany','100.00','A320-232','V2527-5A'],
+  ['C','Perth','Kalgoorlie','80.00','A320-232','V2527-5A'],
+  ['C','Perth','Broome','90.00','A320-232','V2527-5A'],
+  ['B','Albany','Perth','100.00','A320-232','V2527-5A'],
+  ['C','Kalgoorlie','Perth','80.00','A320-232','V2527-5A'],
+  ['B','Broome','Perth','90.00','B737-476','CFM-56-3'],
+  ['B','Launceston','Melbourne','100.00','B737-476','CFM-56-3'],
+  ['B','Launceston','Hobart','80.00','A320-232','V2527-5A'],
+  ['A','Hobart','Melbourne','130.00','B737-3B7','CFM56-3B1'],
+  ['A','Hobart','Launceston','80.00','A320-232','V2527-5A'],
+  ['B','Brisbane','Sydney','170.00','A330-203','CF6-80E142'],
+  ['A','Brisbane','MtIsa','170.00','B737-3B7','CFM56-3B1'],
+  ['A','Brisbane','Rockhampton','180.00','B737-3B7','CFM56-3B1'],
+  ['A','Brisbane','Cairns','230.00','A330-203','CF6-80E142'],
+  ['B','Brisbane','Darwin','240.00','A330-203','CF6-80E142'],
+  ['A','MtIsa','Brisbane','170.00','A330-202','CF6-80E142'],
+  ['B','Rockhampton','Brisbane','180.00','A330-202','CF6-80E142'],
+  ['A','Cairns','Brisbane','230.00','A330-203','CF6-80E142'],
+  ['A','Darwin','Brisbane','240.00','A330-203','CF6-80E142'],
+  ['B','MtIsa','Darwin','120.00','B737-3B7','CFM56-3B1',],
+  ['B','Darwin','MtIsa','120.00','B737-3B7','CFM56-3B1'],
+  ['B','Adelaide','PtAugusta','50.00','B717-200','Unknown'],
+  ['C','PtAugusta','Adelaide','50.00','B717-200','Unknown']
+]
+
+var city_data = {}
+// calculate in degree and out degree
+for(row in flight_data){
+  city = {}
+  cityA = flight_data[row][1]
+  cityB = flight_data[row][2]
+
+  if (typeof(city_data[cityA]) == 'undefined') {
+    // city_data.push(cityA)
+    city.destinations = []
+    city.title = cityA
+    city.out = 1
+    city.in = 0
+    city_data[cityA] = city
+  }else{
+    city_data[cityA].out += 1
+  }
+  city = {}
+  if (typeof(city_data[cityB]) == 'undefined') {
+    // city_data.push(cityB)
+    city.destinations = []
+    city.title = cityB
+    city.in = 1
+    city.out =0
+    city_data[cityB]=city
+  }else{
+    city_data[cityB].in += 1
+  }
+  city_data[cityA].destinations.push(cityB.toLowerCase())
+}
+console.log(city_data)
+
+city_geodata = {
+  "Sydney":{
+    "city":"Sydney",
+    "latitude": -33.868820,
+    "longitude": 151.209290,
+  },
+  "Melbourne":{
+    "city":"Melbourne",
+    "latitude": -37.813629,
+    "longitude": 144.963058,
+  },
+  "Brisbane":{
+    "city":"Brisbane",
+    "latitude": -27.469770,
+    "longitude": 153.025131,
+  },
+  "Canberra":{
+    "city":"Canberra",
+    "latitude": -35.280937,
+    "longitude": 149.130005,
+  },
+  "Newcastle":{
+    "city":"Newcastle",
+    "latitude": -32.926670,
+    "longitude": 151.780014,
+  },
+  "BrokenHill":{
+    "city":"BrokenHill",
+    "latitude": -31.955890,
+    "longitude": 141.465340,
+  },
+  "Adelaide": {
+    "city":"Adelaide",
+    "latitude": -34.928497,
+    "longitude": 138.600739,
+  },
+  "Hobart": {
+    "city":"Hobart",
+    "latitude": -42.881901,
+    "longitude": 147.323807,
+  },
+  "Bendigo": {
+    "city":"Bendigo",
+    "latitude": -36.759338,
+    "longitude": 144.283997,
+  },
+  "Launceston": {
+    "city":"Launceston",
+    "latitude": -41.437019,
+    "longitude": 147.139389,
+  },
+  "Perth": {
+    "city":"Perth",
+    "latitude": -31.950527,
+    "longitude": 115.860458,
+  },
+  "Darwin": {
+    "city":"Darwin",
+    "latitude": -12.463440,
+    "longitude": 130.845642,
+  },
+  "AliceSprings": {
+    "city":"AliceSprings",
+    "latitude": -23.700680,
+    "longitude": 133.880710,
+  },
+  "Albany": {
+    "city":"Albany",
+    "latitude": -35.023819,
+    "longitude": 117.884727,
+  },
+  "Kalgoorlie": {
+    "city":"Kalgoorlie",
+    "latitude": -30.747990,
+    "longitude": 121.476013,
+  },
+  "Broome": {
+    "city":"Broome",
+    "latitude": -17.952150,
+    "longitude": 122.245049,
+  },
+  "MtIsa": {
+    "city":"MtIsa",
+    "latitude": -20.727700,
+    "longitude": 139.490270,
+  },
+  "Rockhampton": {
+    "city":"Rockhampton",
+    "latitude": -23.379078,
+    "longitude": 150.510010,
+  },
+  "Cairns": {
+    "city":"Cairns",
+    "latitude": -16.922779,
+    "longitude": 145.770294,
+  },
+  "PtAugusta": {
+    "city":"PtAugusta",
+    "latitude": -32.492290,
+    "longitude": 137.763080,
+  }
+}
+console.log(city_geodata)
+
+megacity_list = []
+for(city_name in city_data){
+  city ={
+    "id": city_name.toLowerCase(),
+    "title": city_name,
+    "value" : city_data[city_name].in,
+    "latitude": city_geodata[city_name].latitude,
+    "longitude": city_geodata[city_name].longitude
+  }
+
+  for(row in flight_data)
+  city.scale = 1.5
+  city.destinations = city_data[city_name].destinations,
+  megacity_list.push(city)
+}
+console.log(megacity_list)
+am4core.ready(function() {
+
+// Themes begin
+am4core.useTheme(am4themes_animated);
+// Themes end
+
+// Create map instance
+var chart = am4core.create("chartdiv", am4maps.MapChart);
+
+var interfaceColors = new am4core.InterfaceColorSet();
+
+// Set map definition
+chart.geodata = am4geodata_worldLow;
+
+// Set projection
+chart.projection = new am4maps.projections.Mercator();
+
+// Export
+chart.exporting.menu = new am4core.ExportMenu();
+
+// Zoom control
+chart.zoomControl = new am4maps.ZoomControl();
+
+// Data for general and map use
+var originCities = []
+
+originCities = megacity_list
+
+// Default to London view
+//chart.homeGeoPoint = { "longitude": originCities[0].zoomLongitude, "latitude": originCities[0].zoomLatitude };
+//chart.homeZoomLevel = originCities[0].zoomLevel;
+
+var targetSVG = "M9,0C4.029,0,0,4.029,0,9s4.029,9,9,9s9-4.029,9-9S13.971,0,9,0z M9,15.93 c-3.83,0-6.93-3.1-6.93-6.93S5.17,2.07,9,2.07s6.93,3.1,6.93,6.93S12.83,15.93,9,15.93 M12.5,9c0,1.933-1.567,3.5-3.5,3.5S5.5,10.933,5.5,9S7.067,5.5,9,5.5 S12.5,7.067,12.5,9z";
+var planeSVG = "m2,106h28l24,30h72l-44,-133h35l80,132h98c21,0 21,34 0,34l-98,0 -80,134h-35l43,-133h-71l-24,30h-28l15,-47";
+
+// Texts
+var labelsContainer = chart.createChild(am4core.Container);
+labelsContainer.isMeasured = false;
+labelsContainer.x = 80;
+labelsContainer.y = 27;
+labelsContainer.layout = "horizontal";
+labelsContainer.zIndex = 10;
+
+var plane = labelsContainer.createChild(am4core.Sprite);
+plane.scale = 0.15;
+plane.path = planeSVG;
+plane.fill = am4core.color("#cc0000");
+
+var title = labelsContainer.createChild(am4core.Label);
+title.text = ""
+title.fill = am4core.color("#cc0000");
+title.fontSize = 20;
+title.valign = "middle";
+title.dy = 2;
+title.marginLeft = 15;
+
+
+// The world
+var worldPolygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
+worldPolygonSeries.useGeodata = true;
+// worldPolygonSeries.fillOpacity = 0.6;
+// worldPolygonSeries.include = ["AU"];
+var worldPolygonTemplate = worldPolygonSeries.mapPolygons.template
+worldPolygonTemplate.cursorOverStyle = am4core.MouseCursorStyle.pointer;
+worldPolygonTemplate.tooltipText = "{name}"
+
+worldPolygonTemplate.setStateOnChildren = true;
+var hoverimage = worldPolygonTemplate.states.create("hover");
+hoverimage.properties.fill = chart.colors.getIndex(1).brighten(-0.5)
+// worldPolygonTemplate.horizontalCenter = "middle";
+// worldPolygonTemplate.verticalCenter = "middle";
+// worldPolygonSeries.mapPolygons.template.nonScalingStroke = true;
+// worldPolygonSeries.mapPolygons.template.strokeWidth = 0.5;
+
+chart.geodataSource.url = "https://www.amcharts.com/lib/4/geodata/json/australiaLow.json";
+  chart.geodataSource.events.on("parseended", function(ev) {
+    var data = [];
+    for(var i = 0; i < ev.target.data.features.length; i++) {
+      data.push({
+        id: ev.target.data.features[i].id,
+        value: Math.round( Math.random() * 10000 )
+      })
+    }
+    worldPolygonSeries.data = data;
+    console.log(data)
+  })
+
+
+// Origin series (big targets, London and Vilnius)
+var originImageSeries = chart.series.push(new am4maps.MapImageSeries());
+originImageSeries.dataFields.degree = "degree"
+originImageSeries.dataFields.value = "value";
+var originImageTemplate = originImageSeries.mapImages.template;
+
+originImageTemplate.propertyFields.latitude = "latitude";
+originImageTemplate.propertyFields.longitude = "longitude";
+originImageTemplate.propertyFields.id = "id";
+originImageTemplate.propertyFields.degree = "degree"
+
+originImageTemplate.cursorOverStyle = am4core.MouseCursorStyle.pointer;
+originImageTemplate.nonScaling = true;
+originImageTemplate.tooltipText = "{title}";
+
+originImageTemplate.setStateOnChildren = true;
+originImageTemplate.states.create("hover");
+
+originImageTemplate.horizontalCenter = "middle";
+originImageTemplate.verticalCenter = "middle";
+
+var originHitCircle = originImageTemplate.createChild(am4core.Circle);
+originHitCircle.radius = 15;
+originHitCircle.fill = interfaceColors.getFor("background");
+
+var originTargetIcon = originImageTemplate.createChild(am4core.Sprite);
+originTargetIcon.fill = interfaceColors.getFor("alternativeBackground");
+originTargetIcon.strokeWidth = 0;
+// originTargetIcon.scale = 2.0;
+originTargetIcon.horizontalCenter = "middle";
+originTargetIcon.verticalCenter = "middle";
+originTargetIcon.path = targetSVG;
+
+originImageSeries.heatRules.push({
+    property: "scale",
+    target: originTargetIcon,
+    min: 1,
+    max: 2,
+    // propertyField: "degree"
+  });
+  originImageSeries.heatRules.push({
+      property: "radius",
+      target: originHitCircle,
+      min: 9,
+      max: 15,
+      // propertyField: "degree"
+    });
+var originHoverState = originTargetIcon.states.create("hover");
+originHoverState.properties.fill = chart.colors.getIndex(1);
+originImageSeries.zIndex = 1;
+originImageSeries.data = originCities;
+console.log(originImageSeries.dataFields)
+// Line series
+var lineSeries = {
+  "A":'',
+  "B":'',
+  "C":'',
+  "D":'',
+  "E":'',
+}
+
+var colorMap = {
+  "A":'#e03e96',
+  "B":'#1E90FF',
+  "C":'#3fb0ac',
+  "D":'#b89f5d',
+  "E":'#e05915',
+}
+for(cate in lineSeries ){
+  lineSeries[cate] = chart.series.push(new am4maps.MapArcSeries());
+  lineSeries[cate].mapLines.template.strokeWidth = 5;
+  lineSeries[cate].mapLines.template.stroke = am4core.color(colorMap[cate]);
+  lineSeries[cate].mapLines.template.nonScalingStroke = true
+  lineSeries[cate].mapLines.template.line.strokeOpacity = 0.5;
+  lineSeries[cate].mapLines.template.line.controlPointDistance = -0.2;
+  var lineTemplate = lineSeries[cate].mapLines.template;
+  lineTemplate.propertyFields.from = "from";
+  lineTemplate.propertyFields.to = "to";
+  lineTemplate.cursorOverStyle = am4core.MouseCursorStyle.pointer;
+  lineSeries[cate].data = [{"from":"Sydney","to":"Perth"}]
+}
+
+console.log(lineSeries)
+
+chart.events.on("ready", function() {
+  updateData(flight_data[0])
+  showLines();
+})
+
+//Set OnClick Event to lines
+for(cate in lineSeries){
+  lineSeries[cate].mapLines.template.events.on("hit", function(ev) {
+    // showFlight(ev.target.data);
+    console.log(ev.target)
+    updateData(ev.target.data);
+  });
+}
+
+originImageSeries.mapImages.template.events.on("hit", function(ev) {
+  // showFlight(ev.target.data);
+  console.log(ev.target.dataItem.dataContext)
+  var dataContext = ev.target.dataItem.dataContext
+  zoomLevel = 5/dataContext.value + 1
+  chart.zoomToGeoPoint({latitude: dataContext.latitude, longitude: dataContext.longitude }, zoomLevel, true);
+  console.log(chart.zoomControl.zoomFactor)
+});
+
+worldPolygonSeries.mapPolygons.template.events.on("hit",function(ev) {
+  chart.goHome();
+})
+var currentOrigin;
+
+function updateData(data) {
+  let labelMap = ["Air Space Class: ", "Flight from: ",
+  "Flight to: ", "Price: $", "Aircraft Model: ", "Engine Model: "]
+  title.text = ''
+  plane.fill = am4core.color(colorMap[data[0]]);
+  title.fill = am4core.color(colorMap[data[0]]);
+  for( item in data) {
+    title.text += labelMap[item] + data[item]+'\n'
+  }
+}
+
+function goPlane(line,cate,dis) {
+  // console.log(time)
+  // console.log(line.lineObjects)
+  var bullet = line.lineObjects.create();
+  bullet.nonScaling = true;
+  bullet.position = 0.5;
+  bullet.width = 48;
+  bullet.height = 48;
+  bullet.horizontalCenter = "middle";
+  bullet.verticalCenter = "middle";
+
+  var plane = bullet.createChild(am4core.Sprite);
+  plane.scale = 0.15;
+  plane.path = "m2,106h28l24,30h72l-44,-133h35l80,132h98c21,0 21,34 0,34l-98,0 -80,134h-35l43,-133h-71l-24,30h-28l15,-47";
+  plane.fill = am4core.color(colorMap[cate]);
+  plane.strokeOpacity = 0;
+
+  speed = 0.002
+  time = dis/speed
+  let animation = bullet.animate({
+    from: 0,
+    to: 1,
+    property: "position"
+  }, time, am4core.ease.sinInOut);
+  animation.loop()
+  console.log(animation)
+}
+
+function showLines() {
+
+    for (row in flight_data){
+      var line = lineSeries[flight_data[row][0]].mapLines.create();
+      var flight = flight_data[row]
+      line.data = flight
+      console.log(flight)
+      line.imagesToConnect = [flight_data[row][1].toLowerCase(), flight_data[row][2].toLowerCase()];
+      // line.controlPointDistance  = -0.4
+      let fla = city_geodata[flight_data[row][1]].latitude
+      let flo = city_geodata[flight_data[row][1]].longitude
+      let tla = city_geodata[flight_data[row][2]].latitude
+      let tlo = city_geodata[flight_data[row][2]].longitude
+      let dx = Math.abs(fla-tla)
+      let dy = Math.abs(flo-tlo)
+      let distance = Math.sqrt(dx*dx+dy*dy)
+
+      goPlane(line,flight_data[row][0],distance)
+    }
+
+}
+
+var graticuleSeries = chart.series.push(new am4maps.GraticuleSeries());
+graticuleSeries.mapLines.template.line.strokeOpacity = 0.05;
+}); // end am4core.ready()
+</script>
+
+<!-- HTML -->
+<div id="chartdiv"></div>
